@@ -87,7 +87,8 @@ namespace Microsoft.PowerShell.EditorServices.Server
 
                     // This must be run synchronously to ensure debugging works
                     _powerShellContextService
-                        .ExecuteCommandAsync<object>(command, sendOutputToHost: true, sendErrorToHost: true)
+                        .ExecuteCommandAsync<object>(command, CancellationToken.None, sendOutputToHost: true, sendErrorToHost: true)
+                        .ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
                 }

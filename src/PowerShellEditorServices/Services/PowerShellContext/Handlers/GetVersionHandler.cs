@@ -77,7 +77,8 @@ namespace Microsoft.PowerShell.EditorServices.Handlers
         private async Task CheckPackageManagement()
         {
             PSCommand getModule = new PSCommand().AddCommand("Get-Module").AddParameter("ListAvailable").AddParameter("Name", "PackageManagement");
-            foreach (PSModuleInfo module in await _powerShellContextService.ExecuteCommandAsync<PSModuleInfo>(getModule))
+            foreach (PSModuleInfo module in await _powerShellContextService.ExecuteCommandAsync<PSModuleInfo>(
+                getModule, CancellationToken.None).ConfigureAwait(false))
             {
                 // The user has a good enough version of PackageManagement
                 if (module.Version >= s_desiredPackageManagementVersion)

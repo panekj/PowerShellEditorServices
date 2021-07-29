@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Extensions;
 using Microsoft.PowerShell.EditorServices.Services.PowerShellContext;
@@ -117,6 +118,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
                 await this.PowerShellContext.ExecuteCommandAsync<object>(
                     executeCommand,
+                    CancellationToken.None,
                     sendOutputToHost: !editorCommand.SuppressOutput,
                     sendErrorToHost: true).ConfigureAwait(false);
             }

@@ -303,11 +303,14 @@ namespace Microsoft.PowerShell.EditorServices.Handlers
             string debugRunspaceCmd;
             if (request.RunspaceName != null)
             {
-                IEnumerable<int?> ids = await _powerShellContextService.ExecuteCommandAsync<int?>(new PSCommand()
+                IEnumerable<int?> ids = await _powerShellContextService.ExecuteCommandAsync<int?>(
+                    new PSCommand()
                     .AddCommand("Microsoft.PowerShell.Utility\\Get-Runspace")
                     .AddParameter("Name", request.RunspaceName)
                     .AddCommand("Microsoft.PowerShell.Utility\\Select-Object")
-                    .AddParameter("ExpandProperty", "Id"));
+                    .AddParameter("ExpandProperty", "Id"),
+                    cancellationToken).ConfigureAwait(false);
+
                 foreach (var id in ids)
                 {
                     _debugStateService.RunspaceId = id;

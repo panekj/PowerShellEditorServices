@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
@@ -69,6 +70,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
             var results =
                 await _powerShellContext.ExecuteCommandAsync<TResult>(
                     _psCommand,
+                    CancellationToken.None,
                     _errorMessages,
                     _executionOptions).ConfigureAwait(false);
 

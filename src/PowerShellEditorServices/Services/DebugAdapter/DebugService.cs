@@ -407,12 +407,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
             PSCommand psCommand = new PSCommand();
             psCommand.AddScript(value);
             var errorMessages = new StringBuilder();
-            var results =
-                await this.powerShellContext.ExecuteCommandAsync<object>(
-                    psCommand,
-                    errorMessages,
-                    false,
-                    false).ConfigureAwait(false);
+            var results = await this.powerShellContext.ExecuteCommandAsync<object>(
+                    psCommand, CancellationToken.None, errorMessages, false, false).ConfigureAwait(false);
 
             // Check if PowerShell's evaluation of the expression resulted in an error.
             object psobject = results.FirstOrDefault();
@@ -480,7 +476,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
             psCommand.AddParameter("Name", name.TrimStart('$'));
             psCommand.AddParameter("Scope", scope);
 
-            IEnumerable<PSVariable> result = await this.powerShellContext.ExecuteCommandAsync<PSVariable>(psCommand, sendErrorToHost: false).ConfigureAwait(false);
+            IEnumerable<PSVariable> result = await this.powerShellContext.ExecuteCommandAsync<PSVariable>(
+                    psCommand, CancellationToken.None, sendErrorToHost: false).ConfigureAwait(false);
             PSVariable psVariable = result.FirstOrDefault();
             if (psVariable == null)
             {
@@ -511,6 +508,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 var getExecContextResults =
                     await this.powerShellContext.ExecuteCommandAsync<object>(
                         psCommand,
+                        CancellationToken.None,
                         errorMessages,
                         sendErrorToHost: false).ConfigureAwait(false);
 
@@ -707,7 +705,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 new VariableContainerDetails(this.nextVariableId++, "Scope: " + scope);
             this.variables.Add(scopeVariableContainer);
 
-            var results = await this.powerShellContext.ExecuteCommandAsync<PSObject>(psCommand, sendErrorToHost: false).ConfigureAwait(false);
+            var results = await this.powerShellContext.ExecuteCommandAsync<PSObject>(
+                psCommand, CancellationToken.None, sendErrorToHost: false).ConfigureAwait(false);
             if (results != null)
             {
                 foreach (PSObject psVariableObject in results)
@@ -811,7 +810,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
             var callStackVarName = $"$global:{PsesGlobalVariableNamePrefix}CallStack";
             psCommand.AddScript($"{callStackVarName} = Get-PSCallStack; {callStackVarName}");
 
-            var results = await this.powerShellContext.ExecuteCommandAsync<PSObject>(psCommand).ConfigureAwait(false);
+            var results = await this.powerShellContext.ExecuteCommandAsync<PSObject>(
+                    psCommand, CancellationToken.None).ConfigureAwait(false);
 
             var callStackFrames = results.ToArray();
 
@@ -894,9 +894,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 PSCommand command = new PSCommand();
                 command.AddScript($"list 1 {int.MaxValue}");
 
-                IEnumerable<PSObject> scriptListingLines =
-                    await this.powerShellContext.ExecuteCommandAsync<PSObject>(
-                        command, false, false).ConfigureAwait(false);
+                IEnumerable<PSObject> scriptListingLines = await this.powerShellContext.ExecuteCommandAsync<PSObject>(
+                    command, CancellationToken.None, false, false).ConfigureAwait(false);
 
                 if (scriptListingLines != null)
                 {

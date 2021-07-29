@@ -231,7 +231,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             logger.LogTrace("Creating initial PowerShell runspace");
             Runspace initialRunspace = PowerShellContextService.CreateRunspace(psHost, hostStartupInfo.InitialSessionState);
             powerShellContext.Initialize(hostStartupInfo.ProfilePaths, initialRunspace, true, hostUserInterface);
-            powerShellContext.ImportCommandsModuleAsync();
+            powerShellContext.ImportCommandsModuleAsync().ConfigureAwait(false);
 
             // TODO: This can be moved to the point after the $psEditor object
             // gets initialized when that is done earlier than LanguageServer.Initialize
@@ -246,6 +246,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 // This call queues the loading on the pipeline thread, so no need to await
                 powerShellContext.ExecuteCommandAsync<PSObject>(
                     command,
+                    CancellationToken.None,
                     sendOutputToHost: false,
                     sendErrorToHost: true);
 #pragma warning restore CS4014
@@ -433,7 +434,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 .AddCommand("Import-Module")
                 .AddArgument(s_commandsModulePath);
 
-            return this.ExecuteCommandAsync<PSObject>(importCommand, sendOutputToHost: false, sendErrorToHost: false);
+            return this.ExecuteCommandAsync<PSObject>(importCommand, CancellationToken.None, sendOutputToHost: false, sendErrorToHost: false);
         }
 
         private static bool CheckIfRunspaceNeedsEventHandlers(RunspaceDetails runspaceDetails)
@@ -518,10 +519,11 @@ namespace Microsoft.PowerShell.EditorServices.Services
         /// </returns>
         public Task<IEnumerable<TResult>> ExecuteCommandAsync<TResult>(
             PSCommand psCommand,
+            CancellationToken cancellationToken,
             bool sendOutputToHost = false,
             bool sendErrorToHost = true)
         {
-            return ExecuteCommandAsync<TResult>(psCommand, errorMessages: null, sendOutputToHost, sendErrorToHost);
+            return ExecuteCommandAsync<TResult>(psCommand, cancellationToken, errorMessages: null, sendOutputToHost, sendErrorToHost);
         }
 
         /// <summary>
@@ -546,6 +548,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
         /// </returns>
         public Task<IEnumerable<TResult>> ExecuteCommandAsync<TResult>(
             PSCommand psCommand,
+            CancellationToken cancellationToken,
             StringBuilder errorMessages,
             bool sendOutputToHost = false,
             bool sendErrorToHost = true,
@@ -554,6 +557,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             return
                 this.ExecuteCommandAsync<TResult>(
                     psCommand,
+                    cancellationToken,
                     errorMessages,
                     new ExecutionOptions
                     {
@@ -580,6 +584,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "PowerShellContext must catch and log all exceptions to be robust")]
         public async Task<IEnumerable<TResult>> ExecuteCommandAsync<TResult>(
             PSCommand psCommand,
+            CancellationToken cancellationToken,
             StringBuilder errorMessages,
             ExecutionOptions executionOptions)
         {
@@ -759,8 +764,10 @@ namespace Microsoft.PowerShell.EditorServices.Services
                         return shell.Invoke<TResult>(null, invocationSettings);
                     }
 
-                    // May need a cancellation token here
-                    return await Task.Run<IEnumerable<TResult>>(() => shell.Invoke<TResult>(input: null, invocationSettings), CancellationToken.None).ConfigureAwait(false);
+                    // This is the primary reason that ExecuteCommandAsync takes a CancellationToken
+                    return await Task.Run<IEnumerable<TResult>>(
+                        () => shell.Invoke<TResult>(input: null, invocationSettings), cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 finally
                 {
@@ -916,7 +923,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
         /// </returns>
         public Task ExecuteCommandAsync(PSCommand psCommand)
         {
-            return this.ExecuteCommandAsync<object>(psCommand);
+            return this.ExecuteCommandAsync<object>(psCommand, CancellationToken.None);
         }
 
         /// <summary>
@@ -1016,6 +1023,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
             return this.ExecuteCommandAsync<object>(
                 command,
+                CancellationToken.None,
                 errorMessages,
                 new ExecutionOptions()
                 {
@@ -1049,6 +1057,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                         new PSCommand()
                             .AddCommand("Microsoft.PowerShell.Management\\Get-Location")
                             .AddParameter("PSProvider", "FileSystem"),
+                            CancellationToken.None,
                             sendOutputToHost: false,
                             sendErrorToHost: false).ConfigureAwait(false))
                         .FirstOrDefault()
@@ -1099,6 +1108,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
             await this.ExecuteCommandAsync<object>(
                     command,
+                    CancellationToken.None,
                     errorMessages: null,
                     new ExecutionOptions
                     {
@@ -1201,7 +1211,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 return;
             }
 
-            await ExecuteCommandAsync<object>(command, sendOutputToHost: true).ConfigureAwait(false);
+            await ExecuteCommandAsync<object>(command, CancellationToken.None, sendOutputToHost: true).ConfigureAwait(false);
 
             // Gather the session details (particularly the prompt) after
             // loading the user's profiles.
@@ -1649,6 +1659,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
             await ExecuteCommandAsync<PSObject>(
                 new PSCommand().AddCommand("Set-Location").AddParameter("Path", path),
+                CancellationToken.None,
                 errorMessages: null,
                 sendOutputToHost: false,
                 sendErrorToHost: false,
@@ -1938,7 +1949,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
         private IEnumerable<TResult> ExecuteCommandInDebugger<TResult>(PSCommand psCommand, bool sendOutputToHost)
         {
-            this.logger.LogTrace($"Attempting to execute command(s)a in the debugger: {GetStringForPSCommand(psCommand)}");
+            this.logger.LogTrace($"Attempting to execute command(s) in the debugger: {GetStringForPSCommand(psCommand)}");
 
             IEnumerable<TResult> output =
                 this.versionSpecificOperations.ExecuteCommandInDebugger<TResult>(

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.PowerShell.EditorServices.Services
@@ -314,7 +315,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
                             command.AddParameter("Encoding", "Byte");
 
                             byte[] fileContent =
-                                (await this.powerShellContext.ExecuteCommandAsync<byte[]>(command, false, false).ConfigureAwait(false))
+                                (await this.powerShellContext.ExecuteCommandAsync<byte[]>(
+                                    command, CancellationToken.None, false, false).ConfigureAwait(false))
                                     .FirstOrDefault();
 
                             if (fileContent != null)
@@ -383,6 +385,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
             await powerShellContext.ExecuteCommandAsync<object>(
                 saveCommand,
+                CancellationToken.None,
                 errorMessages,
                 false,
                 false).ConfigureAwait(false);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.PowerShell.EditorServices.Services;
@@ -48,7 +49,7 @@ namespace Microsoft.PowerShell.EditorServices.Test.Console
             psCommand.AddScript("$a = \"foo\"; $a");
 
             var executeTask =
-                this.powerShellContext.ExecuteCommandAsync<string>(psCommand);
+                this.powerShellContext.ExecuteCommandAsync<string>(psCommand, CancellationToken.None);
 
             await this.AssertStateChange(PowerShellContextState.Running);
             await this.AssertStateChange(PowerShellContextState.Ready);
@@ -69,7 +70,7 @@ namespace Microsoft.PowerShell.EditorServices.Test.Console
 
             PSCommand psCommand = new PSCommand();
             psCommand.AddScript("$x");
-            Task<IEnumerable<int>> resultTask = this.powerShellContext.ExecuteCommandAsync<int>(psCommand);
+            Task<IEnumerable<int>> resultTask = this.powerShellContext.ExecuteCommandAsync<int>(psCommand, CancellationToken.None);
 
             // Wait for the requested runspace handle and then dispose it
             RunspaceHandle handle = await handleTask;
@@ -132,9 +133,8 @@ namespace Microsoft.PowerShell.EditorServices.Test.Console
                 "$($profile.CurrentUserCurrentHost) " +
                 "$(Assert-ProfileLoaded)\"");
 
-            var result =
-                await this.powerShellContext.ExecuteCommandAsync<string>(
-                    psCommand);
+            var result = await this.powerShellContext.ExecuteCommandAsync<string>(
+                psCommand, CancellationToken.None);
 
             string expectedString =
                 string.Format(
@@ -175,4 +175,3 @@ namespace Microsoft.PowerShell.EditorServices.Test.Console
         #endregion
     }
 }
-

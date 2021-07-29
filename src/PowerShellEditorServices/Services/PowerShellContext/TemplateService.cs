@@ -8,6 +8,7 @@ using Microsoft.PowerShell.EditorServices.Utility;
 using System;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.PowerShell.EditorServices.Services
@@ -75,7 +76,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
                 var getResult =
                     await this.powerShellContext.ExecuteCommandAsync<PSObject>(
-                        psCommand, false, false).ConfigureAwait(false);
+                        psCommand, CancellationToken.None, false, false).ConfigureAwait(false);
 
                 PSObject moduleObject = getResult.First();
                 this.isPlasterInstalled = moduleObject != null;
@@ -96,9 +97,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
                         .AddParameter("ModuleInfo", (PSModuleInfo)moduleObject.ImmediateBaseObject)
                         .AddParameter("PassThru");
 
-                    var importResult =
-                        await this.powerShellContext.ExecuteCommandAsync<object>(
-                            psCommand, false, false).ConfigureAwait(false);
+                    var importResult = await this.powerShellContext.ExecuteCommandAsync<object>(
+                        psCommand, CancellationToken.None, false, false).ConfigureAwait(false);
 
                     this.isPlasterLoaded = importResult.Any();
                     string loadedQualifier =
@@ -137,9 +137,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 psCommand.AddParameter("IncludeModules");
             }
 
-            var templateObjects =
-                await this.powerShellContext.ExecuteCommandAsync<PSObject>(
-                    psCommand, false, false).ConfigureAwait(false);
+            var templateObjects = await this.powerShellContext.ExecuteCommandAsync<PSObject>(
+                psCommand, CancellationToken.None, false, false).ConfigureAwait(false);
 
             this.logger.LogTrace($"Found {templateObjects.Count()} Plaster templates");
 
@@ -172,6 +171,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             var errorString = new System.Text.StringBuilder();
             await this.powerShellContext.ExecuteCommandAsync<PSObject>(
                 command,
+                CancellationToken.None,
                 errorString,
                 new ExecutionOptions
                 {
