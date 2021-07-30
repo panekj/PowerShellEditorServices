@@ -43,8 +43,6 @@ namespace Microsoft.PowerShell.EditorServices.Services
         private StackFrameDetails[] stackFrameDetails;
         private readonly PropertyInfo invocationTypeScriptPositionProperty;
 
-        private static int breakpointHitCounter;
-
         private readonly SemaphoreSlim debugInfoHandle = AsyncUtils.CreateSimpleLockingSemaphore();
         #endregion
 
@@ -107,7 +105,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             this.logger = factory.CreateLogger<DebugService>();
             this.powerShellContext = powerShellContext;
             _breakpointService = breakpointService;
-            this.powerShellContext.DebuggerStop += this.OnDebuggerStopAsync;
+            this.powerShellContext.DebuggerStop += this.OnDebuggerStop;
             this.powerShellContext.DebuggerResumed += this.OnDebuggerResumed;
 
             this.powerShellContext.BreakpointUpdated += this.OnBreakpointUpdated;
@@ -190,7 +188,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             return await dscBreakpoints.SetLineBreakpointsAsync(
                 this.powerShellContext,
                 escapedScriptPath,
-                breakpoints);
+                breakpoints).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -208,12 +206,14 @@ namespace Microsoft.PowerShell.EditorServices.Services
             if (clearExisting)
             {
                 // Flatten dictionary values into one list and remove them all.
-                await _breakpointService.RemoveBreakpointsAsync((await _breakpointService.GetBreakpointsAsync()).Where( i => i is CommandBreakpoint)).ConfigureAwait(false);
+                await _breakpointService.RemoveBreakpointsAsync(
+                    (await _breakpointService.GetBreakpointsAsync().ConfigureAwait(false))
+                    .Where( i => i is CommandBreakpoint)).ConfigureAwait(false);
             }
 
             if (breakpoints.Length > 0)
             {
-                resultBreakpointDetails = (await _breakpointService.SetCommandBreakpoints(breakpoints).ConfigureAwait(false)).ToArray();
+                resultBreakpointDetails = (await _breakpointService.SetCommandBreakpointsAsync(breakpoints).ConfigureAwait(false)).ToArray();
             }
 
             return resultBreakpointDetails ?? new CommandBreakpointDetails[0];
@@ -882,7 +882,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
         /// </summary>
         public event EventHandler<DebuggerStoppedEventArgs> DebuggerStopped;
 
-        internal async void OnDebuggerStopAsync(object sender, DebuggerStopEventArgs e)
+        internal async void OnDebuggerStop(object sender, DebuggerStopEventArgs e)
         {
             bool noScriptName = false;
             string localScriptPath = e.InvocationInfo.ScriptName;

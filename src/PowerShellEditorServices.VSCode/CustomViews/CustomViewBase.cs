@@ -38,10 +38,10 @@ namespace Microsoft.PowerShell.EditorServices.VSCode.CustomViews
                     Title = this.Title,
                     ViewType = this.ViewType,
                 }
-            );
+            ).ConfigureAwait(false);
         }
 
-        public async Task Show(ViewColumn viewColumn)
+        public async Task ShowAsync(ViewColumn viewColumn)
         {
             await languageServer.SendRequestAsync(
                 ShowCustomViewRequest.Method,
@@ -50,10 +50,10 @@ namespace Microsoft.PowerShell.EditorServices.VSCode.CustomViews
                     Id = this.Id,
                     ViewColumn = viewColumn
                 }
-            );
+            ).ConfigureAwait(false);
         }
 
-        public async Task Close()
+        public async Task CloseAsync()
         {
             await languageServer.SendRequestAsync(
                 CloseCustomViewRequest.Method,
@@ -61,7 +61,7 @@ namespace Microsoft.PowerShell.EditorServices.VSCode.CustomViews
                 {
                     Id = this.Id,
                 }
-            );
+            ).ConfigureAwait(false);
         }
     }
 }

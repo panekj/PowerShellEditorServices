@@ -146,7 +146,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             return configuredBreakpoints;
         }
 
-        public async Task<IEnumerable<CommandBreakpointDetails>> SetCommandBreakpoints(IEnumerable<CommandBreakpointDetails> breakpoints)
+        public async Task<IEnumerable<CommandBreakpointDetails>> SetCommandBreakpointsAsync(IEnumerable<CommandBreakpointDetails> breakpoints)
         {
             if (BreakpointApiUtils.SupportsBreakpointApis)
             {

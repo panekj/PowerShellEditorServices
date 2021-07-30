@@ -140,7 +140,7 @@ namespace Microsoft.PowerShell.EditorServices.Server
         /// Get a task that completes when the server is shut down.
         /// </summary>
         /// <returns>A task that completes when the server is shut down.</returns>
-        public async Task WaitForShutdown()
+        public async Task WaitForShutdownAsync()
         {
             Log.Logger.Debug("Shutting down OmniSharp Language Server");
             await _serverStart.Task.ConfigureAwait(false);

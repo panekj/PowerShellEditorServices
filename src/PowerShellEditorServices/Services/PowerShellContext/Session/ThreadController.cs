@@ -121,7 +121,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
         /// A task object representing the frame receiving a request to exit. The Result property
         /// will return the DebuggerResumeAction supplied with the request.
         /// </returns>
-        internal async Task<DebuggerResumeAction> Exit()
+        internal async Task<DebuggerResumeAction> ExitAsync()
         {
             return await FrameExitTask.Task.ConfigureAwait(false);
         }

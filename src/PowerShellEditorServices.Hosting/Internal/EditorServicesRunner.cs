@@ -54,10 +54,10 @@ namespace Microsoft.PowerShell.EditorServices.Hosting
         /// TODO: Use "Async" suffix in names of methods that return an awaitable type.
         /// </remarks>
         /// <returns>A task that ends when Editor Services shuts down.</returns>
-        public Task RunUntilShutdown()
+        public Task RunUntilShutdownAsync()
         {
             // Start Editor Services (see function below)
-            Task runAndAwaitShutdown = CreateEditorServicesAndRunUntilShutdown();
+            Task runAndAwaitShutdown = CreateEditorServicesAndRunUntilShutdownAsync();
 
             // Now write the session file
             _logger.Log(PsesLogLevel.Diagnostic, "Writing session file");
@@ -113,17 +113,17 @@ namespace Microsoft.PowerShell.EditorServices.Hosting
         ///     </description>
         /// </item>
         /// <item>
-        ///     <term><see cref="RunUntilShutdown"></term>
+        ///     <term><see cref="RunUntilShutdownAsync"></term>
         ///     <description>Task which opens a logfile then returns this task.</description>
         /// </item>
         /// <item>
-        ///     <term><see cref="CreateEditorServicesAndRunUntilShutdown"></term>
+        ///     <term><see cref="CreateEditorServicesAndRunUntilShutdownAsync"></term>
         ///     <description>This task!</description>
         /// </item>
         /// </list>
         /// </remarks>
         /// <returns>A task that ends when Editor Services shuts down.</returns>
-        private async Task CreateEditorServicesAndRunUntilShutdown()
+        private async Task CreateEditorServicesAndRunUntilShutdownAsync()
         {
             try
             {
@@ -177,7 +177,7 @@ namespace Microsoft.PowerShell.EditorServices.Hosting
                 if (creatingDebugServer)
                 {
                     // We don't need to wait for this to start, since we instead wait for it to complete later
-                    debugServerStart = StartDebugServer(debugServerCreation);
+                    debugServerStart = StartDebugServerAsync(debugServerCreation);
                 }
 
                 await languageServerStart.ConfigureAwait(false);
@@ -185,7 +185,7 @@ namespace Microsoft.PowerShell.EditorServices.Hosting
                 {
                     await debugServerStart.ConfigureAwait(false);
                 }
-                await languageServer.WaitForShutdown().ConfigureAwait(false);
+                await languageServer.WaitForShutdownAsync().ConfigureAwait(false);
             }
             finally
             {
@@ -201,10 +201,10 @@ namespace Microsoft.PowerShell.EditorServices.Hosting
             _logger.Log(PsesLogLevel.Verbose, "Debug server created");
             await debugServer.StartAsync().ConfigureAwait(false);
             _logger.Log(PsesLogLevel.Verbose, "Debug server started");
-            await debugServer.WaitForShutdown().ConfigureAwait(false);
+            await debugServer.WaitForShutdownAsync().ConfigureAwait(false);
         }
 
-        private async Task StartDebugServer(Task<PsesDebugServer> debugServerCreation)
+        private async Task StartDebugServerAsync(Task<PsesDebugServer> debugServerCreation)
         {
             PsesDebugServer debugServer = await debugServerCreation.ConfigureAwait(false);
 
@@ -226,7 +226,7 @@ namespace Microsoft.PowerShell.EditorServices.Hosting
         {
             _logger.Log(PsesLogLevel.Diagnostic, "Restarting debug server");
             Task<PsesDebugServer> debugServerCreation = RecreateDebugServerAsync(debugServer, usePSReadLine);
-            return StartDebugServer(debugServerCreation);
+            return StartDebugServerAsync(debugServerCreation);
         }
 
         private async Task<PsesLanguageServer> CreateLanguageServerAsync(HostStartupInfo hostDetails)

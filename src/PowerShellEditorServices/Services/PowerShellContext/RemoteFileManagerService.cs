@@ -255,7 +255,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
             this.logger = factory.CreateLogger<RemoteFileManagerService>();
             this.powerShellContext = powerShellContext;
-            this.powerShellContext.RunspaceChanged += HandleRunspaceChangedAsync;
+            this.powerShellContext.RunspaceChanged += HandleRunspaceChanged;
 
             this.editorOperations = editorOperations;
 
@@ -509,7 +509,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             return remotePathMappings;
         }
 
-        private async void HandleRunspaceChangedAsync(object sender, RunspaceChangedEventArgs e)
+        private async void HandleRunspaceChanged(object sender, RunspaceChangedEventArgs e)
         {
             if (e.ChangeAction == RunspaceChangeAction.Enter)
             {
@@ -542,7 +542,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             }
         }
 
-        private async void HandlePSEventReceivedAsync(object sender, PSEventArgs args)
+        private async void HandlePSEventReceived(object sender, PSEventArgs args)
         {
             if (string.Equals(RemoteSessionOpenFile, args.SourceIdentifier, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -622,13 +622,14 @@ namespace Microsoft.PowerShell.EditorServices.Services
             {
                 try
                 {
-                    runspaceDetails.Runspace.Events.ReceivedEvents.PSEventReceived += HandlePSEventReceivedAsync;
+                    runspaceDetails.Runspace.Events.ReceivedEvents.PSEventReceived += HandlePSEventReceived;
 
                     PSCommand createCommand = new PSCommand();
                     createCommand
                         .AddScript(CreatePSEditFunctionScript)
                         .AddParameter("PSEditModule", PSEditModule);
 
+                    // TODO: Isn't this always false?
                     if (runspaceDetails.Context == RunspaceContext.DebuggedRunspace)
                     {
                         this.powerShellContext.ExecuteCommandAsync(createCommand).Wait();
@@ -659,7 +660,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 {
                     if (runspaceDetails.Runspace.Events != null)
                     {
-                        runspaceDetails.Runspace.Events.ReceivedEvents.PSEventReceived -= HandlePSEventReceivedAsync;
+                        runspaceDetails.Runspace.Events.ReceivedEvents.PSEventReceived -= HandlePSEventReceived;
                     }
 
                     if (runspaceDetails.Runspace.RunspaceStateInfo.State == RunspaceState.Opened)

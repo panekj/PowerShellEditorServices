@@ -77,8 +77,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
             IEditorOperations editorOperations)
         {
             // Attach to ExtensionService events
-            this.CommandAdded += ExtensionService_ExtensionAddedAsync;
-            this.CommandUpdated += ExtensionService_ExtensionUpdatedAsync;
+            this.CommandAdded += ExtensionService_ExtensionAdded;
+            this.CommandUpdated += ExtensionService_ExtensionUpdated;
             this.CommandRemoved += ExtensionService_ExtensionRemovedAsync;
 
             this.EditorObject =
@@ -225,7 +225,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             this.CommandRemoved?.Invoke(this, command);
         }
 
-        private void ExtensionService_ExtensionAddedAsync(object sender, EditorCommand e)
+        private void ExtensionService_ExtensionAdded(object sender, EditorCommand e)
         {
             _languageServer?.SendNotification<ExtensionCommandAddedNotification>("powerShell/extensionCommandAdded",
                 new ExtensionCommandAddedNotification
@@ -235,7 +235,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 });
         }
 
-        private void ExtensionService_ExtensionUpdatedAsync(object sender, EditorCommand e)
+        private void ExtensionService_ExtensionUpdated(object sender, EditorCommand e)
         {
             _languageServer?.SendNotification<ExtensionCommandUpdatedNotification>("powerShell/extensionCommandUpdated",
                 new ExtensionCommandUpdatedNotification

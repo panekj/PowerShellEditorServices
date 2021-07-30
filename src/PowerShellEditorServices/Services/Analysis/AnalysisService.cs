@@ -197,7 +197,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
         /// <param name="helpLocation">A string referring to which location comment help should be placed around the function.</param>
         /// <param name="forBlockComment">If true, block comment help will be supplied.</param>
         /// <returns></returns>
-        public async Task<string> GetCommentHelpText(string functionText, string helpLocation, bool forBlockComment)
+        public async Task<string> GetCommentHelpTextAsync(string functionText, string helpLocation, bool forBlockComment)
         {
             if (AnalysisEngine == null)
             {

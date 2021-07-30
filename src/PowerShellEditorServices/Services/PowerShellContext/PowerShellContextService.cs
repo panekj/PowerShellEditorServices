@@ -187,8 +187,8 @@ namespace Microsoft.PowerShell.EditorServices.Services
             this.logger = logger;
             this.isPSReadLineEnabled = isPSReadLineEnabled;
 
-            RunspaceChanged += PowerShellContext_RunspaceChangedAsync;
-            ExecutionStatusChanged += PowerShellContext_ExecutionStatusChangedAsync;
+            RunspaceChanged += PowerShellContext_RunspaceChanged;
+            ExecutionStatusChanged += PowerShellContext_ExecutionStatusChanged;
         }
 
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Checked by Validate call")]
@@ -774,7 +774,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                     if (!executionOptions.IsReadLine)
                     {
                         shell.InvocationStateChanged -= PowerShell_InvocationStateChanged;
-                        await this.sessionStateLock.ReleaseForExecuteCommand().ConfigureAwait(false);
+                        await this.sessionStateLock.ReleaseForExecuteCommandAsync().ConfigureAwait(false);
                     }
 
                     if (shell.HadErrors)
@@ -1430,7 +1430,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
 
         private Task<RunspaceHandle> GetRunspaceHandleImplAsync(CancellationToken cancellationToken, bool isReadLine)
         {
-            return this.PromptNest.GetRunspaceHandleAsync(cancellationToken, isReadLine);
+            return this.PromptNest.GetRunspaceHandleAsync(isReadLine, cancellationToken);
         }
 
         private ExecutionTarget GetExecutionTarget(ExecutionOptions options = null)
@@ -1591,7 +1591,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             this.ConsoleReader?.StartCommandLoop();
 
             var localPipelineExecutionTask = localThreadController.TakeExecutionRequestAsync();
-            var localDebuggerStoppedTask = localThreadController.Exit();
+            var localDebuggerStoppedTask = localThreadController.ExitAsync();
 
             // Wait for off-thread pipeline requests and/or ExitNestedPrompt
             while (true)
@@ -1880,7 +1880,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
         /// currently sending this notification before it has initialized, which is not allowed.
         /// This might be the cause of our deadlock!
         /// </remarks>
-        private void PowerShellContext_RunspaceChangedAsync(object sender, RunspaceChangedEventArgs e)
+        private void PowerShellContext_RunspaceChanged(object sender, RunspaceChangedEventArgs e)
         {
             this.logger.LogTrace("Sending runspaceChanged notification");
 
@@ -1926,7 +1926,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
         /// </remarks>
         /// <param name="sender">the PowerShell context sending the execution event</param>
         /// <param name="e">details of the execution status change</param>
-        private void PowerShellContext_ExecutionStatusChangedAsync(object sender, ExecutionStatusChangedEventArgs e)
+        private void PowerShellContext_ExecutionStatusChanged(object sender, ExecutionStatusChangedEventArgs e)
         {
             this.logger.LogTrace("Sending executionStatusChanged notification");
 
@@ -2480,7 +2480,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
             Task<IPipelineExecutionRequest> localPipelineExecutionTask =
                 localThreadController.TakeExecutionRequestAsync();
             Task<DebuggerResumeAction> localDebuggerStoppedTask =
-                localThreadController.Exit();
+                localThreadController.ExitAsync();
             while (true)
             {
                 int taskIndex =
@@ -2813,7 +2813,7 @@ namespace Microsoft.PowerShell.EditorServices.Services
                 return _sessionStateLock.Wait(0);
             }
 
-            public async Task ReleaseForExecuteCommand()
+            public async Task ReleaseForExecuteCommandAsync()
             {
                 // Algorithm here is the opposite of the acquisition algorithm:
                 // - Acquire the internal lock to ensure the operation is atomic

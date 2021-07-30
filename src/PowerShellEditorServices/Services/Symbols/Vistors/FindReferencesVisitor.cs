@@ -78,28 +78,24 @@ namespace Microsoft.PowerShell.EditorServices.Services.Symbols
                     // if the aliases do not exist (if the symvol isn't a command that has aliases)
                     // set aliases to an empty List<string>
                     string command;
-                    List<string> alaises;
-                    CmdletToAliasDictionary.TryGetValue(commandName, out alaises);
+                    List<string> aliases;
+                    CmdletToAliasDictionary.TryGetValue(commandName, out aliases);
                     AliasToCmdletDictionary.TryGetValue(commandName, out command);
-                    if (alaises == null) { alaises = new List<string>(); }
+                    if (aliases == null) { aliases = new List<string>(); }
                     if (command == null) { command = string.Empty; }
 
-                    if (symbolRef.SymbolType.Equals(SymbolType.Function))
+                    // Check if the found symbol's name is the same as the commandAst's name OR
+                    // if the symbol's name is an alias for this commandAst's name (commandAst is a cmdlet) OR
+                    // if the symbol's name is the same as the commandAst's cmdlet name (commandAst is a alias)
+                    if (commandName.Equals(symbolRef.SymbolName, StringComparison.CurrentCultureIgnoreCase) ||
+                    aliases.Contains(symbolRef.ScriptRegion.Text.ToLower()) ||
+                    command.Equals(symbolRef.ScriptRegion.Text, StringComparison.CurrentCultureIgnoreCase) ||
+                    (!string.IsNullOrEmpty(command) && command.Equals(symbolRefCommandName, StringComparison.CurrentCultureIgnoreCase)))
                     {
-                        // Check if the found symbol's name is the same as the commandAst's name OR
-                        // if the symbol's name is an alias for this commandAst's name (commandAst is a cmdlet) OR
-                        // if the symbol's name is the same as the commandAst's cmdlet name (commandAst is a alias)
-                        if (commandName.Equals(symbolRef.SymbolName, StringComparison.CurrentCultureIgnoreCase) ||
-                        alaises.Contains(symbolRef.ScriptRegion.Text.ToLower()) ||
-                        command.Equals(symbolRef.ScriptRegion.Text, StringComparison.CurrentCultureIgnoreCase) ||
-                        (!string.IsNullOrEmpty(command) && command.Equals(symbolRefCommandName, StringComparison.CurrentCultureIgnoreCase)))
-                        {
-                            this.FoundReferences.Add(new SymbolReference(
-                                SymbolType.Function,
-                                commandNameAst.Extent));
-                        }
+                        this.FoundReferences.Add(new SymbolReference(
+                            SymbolType.Function,
+                            commandNameAst.Extent));
                     }
-
                 }
                 else // search does not include aliases
                 {

@@ -27,12 +27,12 @@ namespace Microsoft.PowerShell.EditorServices.VSCode.CustomViews
         /// </summary>
         /// <param name="viewColumn">The column in which the view will be shown.</param>
         /// <returns>A Task which can be awaited for completion.</returns>
-        Task Show(ViewColumn viewColumn);
+        Task ShowAsync(ViewColumn viewColumn);
 
         /// <summary>
         /// Closes the view in the editor.
         /// </summary>
         /// <returns>A Task which can be awaited for completion.</returns>
-        Task Close();
+        Task CloseAsync();
     }
 }

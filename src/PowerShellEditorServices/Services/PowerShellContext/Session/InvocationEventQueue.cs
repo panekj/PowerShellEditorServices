@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Utility;
 
 namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
@@ -113,7 +113,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
         {
             var request = new InvocationRequest(pwsh =>
             {
-                using (_promptNest.GetRunspaceHandle(CancellationToken.None, isReadLine: false))
+                using (_promptNest.GetRunspaceHandle(false, CancellationToken.None))
                 {
                     pwsh.Runspace = _runspace;
                     invocationAction(pwsh);

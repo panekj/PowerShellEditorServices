@@ -42,7 +42,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
             return this.ReadLineAsync(false, cancellationToken);
         }
 
-        public async Task<SecureString> ReadSecureLineAsync(CancellationToken cancellationToken)
+        public async static Task<SecureString> ReadSecureLineAsync(CancellationToken cancellationToken)
         {
             SecureString secureString = new SecureString();
 
@@ -215,7 +215,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
                             }
                             else
                             {
-                                using (RunspaceHandle runspaceHandle = await this.powerShellContext.GetRunspaceHandleAsync().ConfigureAwait(false))
+                                using (RunspaceHandle runspaceHandle = await this.powerShellContext.GetRunspaceHandleAsync(cancellationToken).ConfigureAwait(false))
                                 using (PowerShell powerShell = PowerShell.Create())
                                 {
                                     powerShell.Runspace = runspaceHandle.Runspace;
@@ -489,7 +489,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
         }
 
         // TODO: Is this used?
-        private int CalculateIndexFromCursor(
+        private static int CalculateIndexFromCursor(
             int promptStartCol,
             int promptStartRow,
             int consoleWidth)
@@ -499,7 +499,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
                 ConsoleProxy.GetCursorLeft() - promptStartCol;
         }
 
-        private void CalculateCursorFromIndex(
+        private static void CalculateCursorFromIndex(
             int promptStartCol,
             int promptStartRow,
             int consoleWidth,
@@ -598,7 +598,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
             int consoleWidth,
             int newCursorIndex)
         {
-            this.CalculateCursorFromIndex(
+            ConsoleReadLine.CalculateCursorFromIndex(
                 promptStartCol,
                 promptStartRow,
                 consoleWidth,

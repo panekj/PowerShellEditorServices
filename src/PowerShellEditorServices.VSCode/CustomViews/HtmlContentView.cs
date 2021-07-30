@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.EditorServices.VSCode.CustomViews
                     Id = this.Id,
                     HtmlContent = new HtmlContent { BodyContent = htmlBodyContent }
                 }
-            );
+            ).ConfigureAwait(false);
         }
 
         public async Task SetContentAsync(HtmlContent htmlContent)
@@ -50,7 +50,7 @@ namespace Microsoft.PowerShell.EditorServices.VSCode.CustomViews
                     Id = this.Id,
                     HtmlContent = validatedContent
                 }
-            );
+            ).ConfigureAwait(false);
         }
 
         public async Task AppendContentAsync(string appendedHtmlBodyContent)
@@ -62,7 +62,7 @@ namespace Microsoft.PowerShell.EditorServices.VSCode.CustomViews
                     Id = this.Id,
                     AppendedHtmlBodyContent = appendedHtmlBodyContent
                 }
-            );
+            ).ConfigureAwait(false);
         }
 
         private string[] GetUriPaths(string[] filePaths)

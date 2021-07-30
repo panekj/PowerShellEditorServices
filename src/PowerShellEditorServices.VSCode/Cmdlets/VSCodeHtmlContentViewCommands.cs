@@ -62,7 +62,7 @@ namespace Microsoft.PowerShell.EditorServices.VSCode
             if (_showInColumn != null) {
                 try
                 {
-                    view.Show(_showInColumn.Value).GetAwaiter().GetResult();
+                    view.ShowAsync(_showInColumn.Value).GetAwaiter().GetResult();
                 }
                 catch (Exception e)
                 {
@@ -143,7 +143,7 @@ namespace Microsoft.PowerShell.EditorServices.VSCode
         {
             try
             {
-                HtmlContentView.Close().GetAwaiter().GetResult();
+                HtmlContentView.CloseAsync().GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
@@ -178,7 +178,7 @@ namespace Microsoft.PowerShell.EditorServices.VSCode
         {
             try
             {
-                HtmlContentView.Show(ViewColumn).GetAwaiter().GetResult();
+                HtmlContentView.ShowAsync(ViewColumn).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {

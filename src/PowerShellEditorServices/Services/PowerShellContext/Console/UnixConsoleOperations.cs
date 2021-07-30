@@ -264,10 +264,11 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
                         s_waitHandle.Wait(ShortWaitForKeySpinUntilSleepTime, cancellationToken);
                         return IsKeyAvailable(cancellationToken);
                     },
-                    millisecondsTimeout));
+                    millisecondsTimeout),
+                    cancellationToken);
         }
 
-        private bool IsKeyAvailable(CancellationToken cancellationToken)
+        private static bool IsKeyAvailable(CancellationToken cancellationToken)
         {
             s_stdInHandle.Wait(cancellationToken);
             try
@@ -280,7 +281,7 @@ namespace Microsoft.PowerShell.EditorServices.Services.PowerShellContext
             }
         }
 
-        private async Task<bool> IsKeyAvailableAsync(CancellationToken cancellationToken)
+        private async static Task<bool> IsKeyAvailableAsync(CancellationToken cancellationToken)
         {
             await s_stdInHandle.WaitAsync(cancellationToken).ConfigureAwait(false);
             try

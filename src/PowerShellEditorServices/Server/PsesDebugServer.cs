@@ -144,7 +144,7 @@ namespace Microsoft.PowerShell.EditorServices.Server
             _serverStopped.SetResult(true);
         }
 
-        public async Task WaitForShutdown()
+        public async Task WaitForShutdownAsync()
         {
             await _serverStopped.Task.ConfigureAwait(false);
         }

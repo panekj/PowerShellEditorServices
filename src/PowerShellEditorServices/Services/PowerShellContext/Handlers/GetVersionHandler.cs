@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell.EditorServices.Handlers
 
             if (VersionUtils.IsPS5 && _configurationService.CurrentSettings.PromptToUpdatePackageManagement)
             {
-                await CheckPackageManagement().ConfigureAwait(false);
+                await CheckPackageManagementAsync().ConfigureAwait(false);
             }
 
             return new PowerShellVersion
@@ -74,7 +74,7 @@ namespace Microsoft.PowerShell.EditorServices.Handlers
             X64
         }
 
-        private async Task CheckPackageManagement()
+        private async Task CheckPackageManagementAsync()
         {
             PSCommand getModule = new PSCommand().AddCommand("Get-Module").AddParameter("ListAvailable").AddParameter("Name", "PackageManagement");
             foreach (PSModuleInfo module in await _powerShellContextService.ExecuteCommandAsync<PSModuleInfo>(
@@ -110,7 +110,7 @@ namespace Microsoft.PowerShell.EditorServices.Handlers
                             Title = "Not now"
                         }
                     }
-                });
+                }).ConfigureAwait(false);
 
                 // If the user chose "Not now" ignore it for the rest of the session.
                 if (messageAction?.Title == takeActionText)
